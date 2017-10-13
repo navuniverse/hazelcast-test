@@ -34,8 +34,8 @@ public class HazelcastConfig {
 		ConcurrentMap<String, String> commonMap = hazelcastInstance().getMap("commonMap");
 
 		MapConfig mapConfig = hazelcastInstance().getConfig().getMapConfig("commonMap");
-		mapConfig.setMaxIdleSeconds(86400);
-		mapConfig.setTimeToLiveSeconds(86400);
+		mapConfig.setMaxIdleSeconds(900);
+		mapConfig.setTimeToLiveSeconds(900);
 		mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
 
 		return commonMap;
