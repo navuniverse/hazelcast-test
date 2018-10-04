@@ -1,4 +1,4 @@
-package com.rockingengineering.hazelcast.configuration;
+package com.rockingengineering.vault.configuration;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,7 +19,7 @@ public class SwaggerConfig {
 	public Docket api() {
 		return new Docket(DocumentationType.SWAGGER_2)
 				.select()
-				.apis(RequestHandlerSelectors.basePackage("com.rockingengineering.hazelcast.controller"))
+				.apis(RequestHandlerSelectors.basePackage("com.rockingengineering.vault.controller"))
 				.paths(PathSelectors.any())
 				.build()
 				.apiInfo(apiInfo());
@@ -29,8 +29,8 @@ public class SwaggerConfig {
 		Contact contact = new Contact("Naveen Kumar", "www.rockingengineering.com", "contact@rockingengineering.com");
 
 		ApiInfo apiInfo = new ApiInfo(
-				"Hazelcast Test Microservice",
-				"RockingEngineering Hazelcast Test",
+				"Spring Cloud Vault Test Microservice",
+				"RockingEngineering Spring Vault Test",
 				"1.0",
 				"https://www.rockingengineering.com/terms-conditions",
 				contact,
