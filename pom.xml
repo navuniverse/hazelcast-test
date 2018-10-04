@@ -21,6 +21,7 @@
 	</parent>
 
 	<properties>
+
 		<!-- Hazelcast Spring Version -->
 		<hazelcast.spring.version>3.8.4</hazelcast.spring.version>
 
