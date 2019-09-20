@@ -3,8 +3,8 @@
  */
 package com.rockingengineering.hazelcast.configuration;
 
-import java.util.concurrent.ConcurrentMap;
-
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +17,7 @@ import com.hazelcast.config.NetworkConfig;
 import com.hazelcast.config.TcpIpConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.IMap;
 
 /**
  * @author naveen
@@ -29,11 +30,26 @@ import com.hazelcast.core.HazelcastInstance;
 })
 public class HazelcastConfig {
 
-	@Bean(name = "commonMap")
-	public ConcurrentMap<String, String> commonMap() {
-		ConcurrentMap<String, String> commonMap = hazelcastInstance().getMap("commonMap");
+	@Value("${hazelcast.kubernetes.enabled:false}")
+	private boolean kubernetesEnabled;
 
-		MapConfig mapConfig = hazelcastInstance().getConfig().getMapConfig("commonMap");
+	@Value("${hazelcast.host}")
+	private String hazelcastHosts;
+
+	@Value("${hazelcast.port:5711}")
+	private int hazelcastPort;
+
+	@Value("${hazelcast.port.count:1}")
+	private int hazelcastPortCount;
+
+	@Bean(name = "commonMap")
+	public IMap<String, String> commonMap() {
+
+		HazelcastInstance instance = hazelcastInstance();
+
+		IMap<String, String> commonMap = instance.getMap("commonMap");
+
+		MapConfig mapConfig = instance.getConfig().getMapConfig("commonMap");
 		mapConfig.setMaxIdleSeconds(900);
 		mapConfig.setTimeToLiveSeconds(900);
 		mapConfig.setEvictionPolicy(EvictionPolicy.LRU);
@@ -55,11 +71,27 @@ public class HazelcastConfig {
 		return config;
 	}
 
+	private NetworkConfig getNetworkConfig(Config config) {
+		NetworkConfig networkConfig = config.getNetworkConfig();
+
+		if (!kubernetesEnabled) {
+			networkConfig.setPort(hazelcastPort).setPortCount(hazelcastPortCount);
+			networkConfig.setPortAutoIncrement(true);
+		}
+
+		return networkConfig;
+	}
+
 	private void setJoinConfig(NetworkConfig networkConfig) {
 		JoinConfig joinConfig = networkConfig.getJoin();
+
 		joinConfig.getMulticastConfig().setEnabled(false);
 
-		setTcpConfig(joinConfig);
+		if (kubernetesEnabled) {
+			joinConfig.getKubernetesConfig().setEnabled(true);
+		} else {
+			setTcpConfig(joinConfig);
+		}
 	}
 
 	private void setTcpConfig(JoinConfig joinConfig) {
@@ -67,17 +99,30 @@ public class HazelcastConfig {
 
 		tcpIpConfig.setEnabled(true);
 
-		tcpIpConfig.addMember("10.0.0.240");
-		tcpIpConfig.addMember("10.0.0.88");
+		boolean hostFound = addHostForTcpConfig(tcpIpConfig);
 
+		if (!hostFound) {
+			tcpIpConfig.addMember("localhost");
+		}
 	}
 
-	private NetworkConfig getNetworkConfig(Config config) {
-		NetworkConfig networkConfig = config.getNetworkConfig();
-		networkConfig.setPort(5711).setPortCount(10);
-		networkConfig.setPortAutoIncrement(true);
+	private boolean addHostForTcpConfig(TcpIpConfig tcpIpConfig) {
+		boolean hostFound = false;
 
-		return networkConfig;
+		if (StringUtils.isNotBlank(hazelcastHosts)) {
+			String[] hosts = hazelcastHosts.split(",");
+
+			if (hosts != null && hosts.length > 0) {
+				hostFound = true;
+
+				for (String host : hosts) {
+					tcpIpConfig.addMember(host);
+				}
+			}
+
+		}
+
+		return hostFound;
 	}
 
 }

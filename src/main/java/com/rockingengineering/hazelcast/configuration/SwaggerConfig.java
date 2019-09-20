@@ -1,5 +1,7 @@
 package com.rockingengineering.hazelcast.configuration;
 
+import java.util.ArrayList;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,15 +30,15 @@ public class SwaggerConfig {
 	private ApiInfo apiInfo() {
 		Contact contact = new Contact("Naveen Kumar", "www.rockingengineering.com", "contact@rockingengineering.com");
 
-		ApiInfo apiInfo = new ApiInfo(
+		return new ApiInfo(
 				"Hazelcast Test Microservice",
 				"RockingEngineering Hazelcast Test",
 				"1.0",
 				"https://www.rockingengineering.com/terms-conditions",
 				contact,
 				"RockingEngineering Internal License",
-				"https://www.rockingengineering.com/privacy-policy");
+				"https://www.rockingengineering.com/privacy-policy",
+				new ArrayList<>());
 
-		return apiInfo;
 	}
 }

@@ -4,58 +4,69 @@
 package com.rockingengineering.hazelcast.controller;
 
 import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.annotation.Resource;
 
-import org.apache.log4j.Logger;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
+import com.hazelcast.core.IMap;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * @author naveen
  *
  * @date 08-Sep-2017
  */
-@Api(value = "Hazelcast Controller", description = "Hazelcast Controller API")
+@Log4j2
 @RestController
 @RequestMapping("api")
 public class HazelcastController {
 
-	private static final Logger logger = Logger.getLogger(HazelcastController.class);
-
 	@Resource(name = "commonMap")
-	private ConcurrentMap<String, String> commonMap;
+	private IMap<String, String> commonMap;
 
-	@ApiOperation(value = "Get All Hazelcast Keys")
-	@RequestMapping(value = "/getAll", method = RequestMethod.GET)
+	@GetMapping("/getAll")
 	public Set<String> getAllMapKeys() {
-		logger.debug("Received Get All Hazelcast Keys Request");
+		log.debug("Received Get All Hazelcast Keys Request");
 
 		return commonMap.keySet();
 	}
 
-	@ApiOperation(value = "Add key to Hazelcast")
-	@RequestMapping(value = "/addKey", method = RequestMethod.POST)
+	@GetMapping("/get/{key}")
+	public String getKey(@PathVariable(name = "key") String key) {
+		log.debug("Received Get Hazelcast Key Request: " + key);
+
+		if (commonMap.containsKey(key)) {
+			return "Key: " + key + ", Value: " + commonMap.get(key);
+		}
+
+		return "Key: " + key + " not found in map";
+	}
+
+	@PostMapping("/add")
 	public String addKeyToMap(String key) {
-		logger.debug("Received Add key to Hazelcast Request");
+		log.debug("Received Add key to Hazelcast Request");
 
 		commonMap.put(key, "");
 
 		return "Added Key: " + key + " in map";
 	}
 
-	@ApiOperation(value = "Add key to Hazelcast")
-	@RequestMapping(value = "/removeKey", method = RequestMethod.POST)
-	public String removeKeyFromMap(String key) {
-		logger.debug("Received Remove key from Hazelcast Request");
+	@DeleteMapping(value = "/remove/{key}")
+	public String removeKeyFromMap(@PathVariable(name = "key") String key) {
+		log.debug("Received Remove key from Hazelcast Request");
 
-		commonMap.remove(key);
+		if (commonMap.containsKey(key)) {
+			commonMap.remove(key);
+			return "Removed Key: " + key + " from map";
+		}
 
-		return "Removed Key: " + key + " from map";
+		return "Key: " + key + " not found in map";
 	}
 }
