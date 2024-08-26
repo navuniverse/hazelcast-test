@@ -35,7 +35,7 @@
 		<swagger.core.version>1.0</swagger.core.version>
 
 		<!-- springfox-swagger -->
-		<springfox.swagger.version>2.9.2</springfox.swagger.version>
+		<springfox.swagger.version>2.10.0</springfox.swagger.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
